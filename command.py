@@ -1,0 +1,300 @@
+import logging
+import mpdserver
+logger=mpdserver.logging
+#logger.basicConfig(level=logging.DEBUG)
+
+
+class CommandArgumentException(Exception):pass
+        
+
+class Command():
+    """ You can define argument format by setting formatArg
+    attribute. Command argument can be accessed with self.args
+    dictionnary. 
+
+    Each command has a playlist attribute which is given by
+    MpdRequestHandler. This playlist must implement MpdPlaylist class
+    and by default, this one is used.
+    """
+    formatArg=[]
+    def __init__(self,args,playlist):
+            self.args=self.__parseArg(args)
+            self.playlist=playlist
+
+    def run(self):
+        try:
+            self.handle_args(**(self.args))
+            return self.toMpdMsg()
+        except NotImplementedError as e:
+            raise mpdserver.CommandNotImplemented(self.__class__,str(e))
+
+    def __parseArg(self,args):
+        if len(args) > len(self.formatArg):
+            raise CommandArgumentException("Too much arguments: %s command arguments should be %s instead of %s" % (self.__class__,self.formatArg,args))
+        try:
+            d=dict()
+            for i in range(0,len(self.formatArg)):
+                if Opt in self.formatArg[i][1].__bases__ :
+                    try:
+                        d.update({self.formatArg[i][0] : self.formatArg[i][1](args[i])})
+                    except IndexError : pass
+                else:                        
+                    d.update({self.formatArg[i][0] : self.formatArg[i][1](args[i])})
+        except IndexError : 
+            raise CommandArgumentException("Not enough arguments: %s command arguments should be %s instead of %s" %(self.__class__,self.formatArg,args))
+        except ValueError as e:
+            raise CommandArgumentException("Wrong argument type: %s command arguments should be %s instead of %s (%s)" %(self.__class__,self.formatArg,args,e))
+        return d
+        
+    def handle_args(self,**kwargs):logger.debug("Parsing arguments %s in %s" % (str(kwargs),str(self.__class__)))
+    def toMpdMsg(self):
+        logger.info("Not implemented respond for command %s"%self.__class__)
+        return ""
+
+class CommandDummy(Command):
+    def toMpdMsg(self):
+        logger.info("Dummy respond sent for command %s"%self.__class__)
+        return "ACK [error@command_listNum] {%s} Dummy respond for command '%s'\n" % (self.__class__,self.__class__)
+    
+
+class CommandItems(Command):
+    def items(self):return []
+    def toMpdMsg(self):
+        items=self.items()
+        acc=""
+        for (i,v) in items:
+            acc+="%s: %s\n"%(i,str(v))
+        return acc
+
+
+class CommandSong(CommandItems):
+    """ Generate songs information for mpd clients """
+    def helper_mkSong(self,file,title="",time=0,album="",artist="",track=0,playlistPosition=0,id=0):
+        """ Helpers to create a mpd song """
+        return [('file',file),
+                ('Time',time),
+                ('Album',album),
+                ('Artist',artist),
+                ('Title',title),
+                ('Track',track),
+                ('Pos',playlistPosition),
+                ('Id',id)]
+    def song(self):return [] #self.helper_mkSong("/undefined/")
+    """ Override it to adapt this command """
+    def items(self):return self.song()
+        
+
+import types
+class Opt(object):pass
+class OptInt(Opt,types.IntType):pass
+class OptStr(Opt,types.StringType):pass
+
+class MpdSong(object):
+    """ To create a mpd song. To kind of mpd song exist : in a playlist or not.
+    If songId is not set, an id is generated with generatePlaylistSongId method."""
+
+    def __init__(self,file,title="",time=0,album="",artist="",track=0,playlistPosition=None,songId=None):
+        self.file=file
+        self.title=title
+        self.time=time
+        self.album=album
+        self.artist=artist
+        self.track=track
+        self.playlistPosition=playlistPosition
+        if songId == None:
+            self.id=self.generatePlaylistSongId(self)
+        else:
+            self.id
+    def generatePlaylistSongId(self,song):
+        return id(song)
+
+
+class MpdPlaylist(object):
+    """ MpdPlaylist is a list of song.  
+    Use it to create a mapping between your player and the fictive mpd
+    server.
+
+    Some methods must be implemented, otherwise, NotImplementedError
+    is raised."""
+    def songIdToPosition(self,id):
+        raise NotImplementedError("you should implement MpdPlaylist.songIdToPosition method")
+    def version(self):
+        return 0
+    def length(self):
+        return len(self.getMpdPlaylist())
+    def getMpdPlaylist(self):
+        return []
+    def move(self,fromPostion,toPosition):
+        raise NotImplementedError("you should implement MpdPlaylist.move method")
+    def moveId(self,fromId,toPosition):
+        self.move(self.songIdToPosition(fromId),toPosition)
+
+class CommandPlaylist(CommandSong):
+    def handle_playlist(self):
+        """ Overwrite it to specify a real playlist. 
+        Should return a list of dict song informations"""
+        return self.playlist.getMpdPlaylist()
+
+    def items(self):
+        playlist=self.handle_playlist()
+        acc=[]
+        for s in playlist:
+            acc+=self.helper_mkSong(**s)
+        return acc
+
+################################
+# Default Commands Definitions #
+################################
+class PlayId(Command):
+    formatArg=[('songId',OptInt)]
+    
+class Outputs(CommandItems):
+    def items(self):
+        return [('outputid',0),        # <int output> the output number                              
+                ('outputname','test'), # <str name> the name as defined in the MPD configuration file
+                ('outputenabled',1)    # <int enabled> 1 if enabled, 0 if disabled                   
+                ]
+
+class CurrentSong(CommandSong):pass
+
+class Stats(CommandItems):
+    def items(self):
+        return [("artists",-1),  #number of artists
+                ("albums",-1),  #number of albums
+                ("songs",-1),  #number of songs
+                ("uptime",-1),  #daemon uptime (time since last startup) in seconds
+                ("playtime",-1),  #time length of music played
+                ("db_playtime",-1),  #sum of all song times in db
+                ("db_update",-1)]  #last db update in UNIX time 
+
+class Status(CommandItems):
+    def helper_status_common(self,volume=0,repeat=0,random=0,xfade=0):
+        "Status is set to 'stop' by default. Use :method:play or :method:pause to set status"
+        return [('volume',volume), #(0-100)  
+                ('repeat',repeat), #(0 or 1) 
+                ('random',random), #(0 or 1) 
+                ('playlist',self.playlist.version()), #(31-bit unsigned integer, the playlist version number)
+                ('playlistlength',self.playlist.length()),   #(integer, the length of the playlist)                 
+                ('xfade',xfade)]                     #(crossfade in seconds)                                
+#               ('bitrate') + #<int bitrate> (instantaneous bitrate in kbps)
+#               ('audio') + #<int sampleRate>:<int bits>:<int channels>
+#               ('updating_db') + #<int job id>
+#               ('error') + #if there is an error, returns message here
+#               ('nextsong: 0\n') + #(next song, playlist song number >=mpd 0.15)
+#               ('nextsongid: 0\n') + #(next song, playlist songid>=mpd 0.15)
+
+    def helper_status_stop(self,volume=0,repeat=0,random=0,xfade=0):
+        "Status is set to 'stop' by default. Use :method:play or :method:pause to set status"
+        return (self.helper_status_common(volume,repeat,random,xfade) +
+                [('state',"stop")]) #("play", "stop", or "pause")
+    
+    def helper_status_play(self,volume=0,repeat=0,random=0,xfade=0,elapsedTime=10,durationTime=100,playlistSongNumber=-1,playlistSongId=-1):
+        return (self.helper_status_common(volume,repeat,random,xfade) +
+                [('state',"play"),
+                 ('song',playlistSongNumber), #(current song stopped on or playing, playlist song number)
+                 ('songid',playlistSongId),   #(current song stopped on or playing, playlist songid)
+                 ('time',"%d:%d"%(elapsedTime,durationTime))]) #<int elapsed>:<time total> (of current playing/paused song)
+
+    def helper_status_pause(self,volume=0,repeat=0,random=0,xfade=0,elapsedTime=10,durationTime=100,playlistSongNumber=-1,playlistSongId=-1):
+        return (self.helper_status_common(volume,repeat,random,xfade) +
+                [('state',"pause"),
+                 ('song',playlistSongNumber),
+                 ('songid',playlistSongId),
+                 ('time',"%d:%d"%(elapsedTime,durationTime))])
+
+    def items(self):
+        return self.helper_status_stop()
+
+class NotCommands(CommandItems): pass# Not used by gmpc
+    # def items(self):
+    #     return [('command','tagtypes'),
+    #             ('command','lsinfo')]
+
+class LsInfo(Command): # Since 0.12
+    formatArg=[('directory',OptStr)]
+
+class MoveId(Command): # Since 0.12
+    formatArg=[('idFrom',int),('positionTo',int)]
+    def handle_args(self,idFrom,positionTo):
+        self.playlist.moveId(idFrom,positionTo)
+class Move(Command): # Since 0.12
+    formatArg=[('positionFrom',int),('positionTo',int)]
+    def handle_args(self,positionFrom,positionTo):
+        self.playlist.move(positionFrom,positionTo)
+    
+class ListPlaylistInfo(CommandSong): # Since 0.12
+    """ List playlist 'playlistname' content """
+    formatArg=[('playlistName',str)]
+
+class TagTypes(Command):pass # Since 0.12
+class PlChanges(CommandPlaylist):
+    formatArg=[('playlistVersion',int)]
+    def handle_playlist(self):
+        return self.playlist.getMpdPlaylist()
+
+class PlaylistInfo(CommandPlaylist):
+    """ Without song position, list all song in current playlist. With
+    song position argument, get song details. """
+    formatArg=[('songPosition',OptInt)]
+    def handle_playlist(self):
+        try :
+            return [self.playlist.getMpdPlaylist()[self.args['songPosition']]]
+        except KeyError:pass
+        return self.playlist.getMpdPlaylist()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class MpdReturnType(object):
+    def checkType(self,cls,cls2=None):
+        if type(self) is cls or (cls2!=None and type(self) is cls2):
+            return self.toMpdMsg()
+        else: raise MpdErrorMsgFormat
+    def toMpdMsg(self):
+        logger.info("Dummy respond sent for command %s"%type(self))
+        return ""
+
+
+# class MpdPlaylist(MpdReturnType):
+#     def __init__(self):
+#         print "initialisation playlist"
+#         self.playlist=[]
+#         self.version=0
+        
+#     def update(self):
+#         """ Override it to map your playlist to a mpd playlist. """
+#         self.playlist=[MpdSong("undefined 0"),MpdSong("undefined 1")]
+
+#     def toMpdMsg(self):
+#         self.update()
+#         acc=""
+#         for i in self.playlist:
+#             acc+=i.toMpdMsg()
+#         return acc
+
+
+
+# class Commands(MpdReturnType): # Not used by gmpc
+#     def toMpdMsg(self):
+#         return (("command: status\n")  #number of artists
+#                 + ("command: outputs\n")
+#                 + ("command: pause\n") 
+#                 + ("command: stop\n")
+#                 + ("command: play\n")
+#                 )
