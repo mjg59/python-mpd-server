@@ -9,21 +9,18 @@ class Outputs(mpdserver.Outputs):
                 ('outputenabled',1)    # <int enabled> 1 if enabled, 0 if disabled                   
                 ]
 
-playlist=[{'file':'file0','title':'title0','time':0,'album':'album0','artist':'artist0','track':0,'playlistPosition':0,'id':0},
-          {'file':'file1','title':'title1','time':1,'album':'album1','artist':'artist1','track':1,'playlistPosition':1,'id':1},
-          {'file':'file2','title':'title2','time':2,'album':'album2','artist':'artist2','track':2,'playlistPosition':2,'id':2},
-          {'file':'file3','title':'title3','time':3,'album':'album3','artist':'artist3','track':3,'playlistPosition':3,'id':3}]
 
 class MpdPlaylist(mpdserver.MpdPlaylist):
-    def __init__(self):
-        self.playlist=playlist
-
+    playlist=[{'file':'file0','title':'title0','time':0,'album':'album0','artist':'artist0','track':0,'id':0},
+              {'file':'file1','title':'title1','time':1,'album':'album1','artist':'artist1','track':1,'id':1},
+              {'file':'file2','title':'title2','time':2,'album':'album2','artist':'artist2','track':2,'id':2},
+              {'file':'file3','title':'title3','time':3,'album':'album3','artist':'artist3','track':3,'id':3}]
     def songIdToPosition(self,i):
         for e in self.playlist:
             if e['id']==i : return e['playlistPosition']
-    def getMpdPlaylist(self):
-#        for i in range(len(self.playlist)):
-#            self.playlist[i][playlistPosition]=i
+            
+    def handlePlaylist(self):
+        print 'iuoo'
         return self.playlist
 
     def move(self,i,j):

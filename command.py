@@ -48,7 +48,7 @@ class Command():
         
     def handle_args(self,**kwargs):logger.debug("Parsing arguments %s in %s" % (str(kwargs),str(self.__class__)))
     def toMpdMsg(self):
-        logger.info("Not implemented respond for command %s"%self.__class__)
+        logger.debug("Not implemented respond for command %s"%self.__class__)
         return ""
 
 class CommandDummy(Command):
@@ -108,6 +108,58 @@ class MpdSong(object):
     def generatePlaylistSongId(self,song):
         return id(song)
 
+class PlaylistHistory(object):
+    """ Contains all playlist version to generate playlist diff (see
+    plchanges* commands). This class is a singleton and it is used by
+    MpdPlaylist.    
+    """ 
+    _instance = None
+    playlistHistory=[]
+        
+    def __new__(cls, *args, **kwargs):
+        if not cls._instance:
+            cls._instance = super(PlaylistHistory, cls).__new__(
+                cls, *args, **kwargs)
+        return cls._instance
+        
+    def addPlaylist(self,version,playlist):
+        """ Add playlist version if not exist in history """
+        for (v,p) in self.playlistHistory:
+            if v == version:
+                return None
+        self.playlistHistory.append((version,playlist))
+
+    def getPlaylist(self,version):
+        """ Get playlist from version"""
+        for (i,p) in self.playlistHistory:
+            if i==version:
+                return p
+        return None
+
+    def diff(self,version):
+        """ Return new songs in current playlist since version """
+        plOld=self.getPlaylist(version)
+        plCur=self.playlistHistory[len(self.playlistHistory)-1][1]
+        if plOld == None:
+            return plCur
+        diff=[]
+        try :
+            for i in range(0,len(plOld)):
+                if plOld[i] != plCur[i]:
+                    diff.append(plCur[i])
+            for i in range(len(plOld),len(plCur)):
+                diff.append(plCur[i])
+        except IndexError: pass
+        return diff
+            
+    def show(self):
+        print "show playlistHistory"
+        print "number of version: " + str(len(self.playlistHistory))
+        for i in self.playlistHistory:
+            print i
+            print "------"
+        print "show playlistHistory end"
+        
 
 class MpdPlaylist(object):
     """ MpdPlaylist is a list of song.  
@@ -115,25 +167,45 @@ class MpdPlaylist(object):
     server.
 
     Some methods must be implemented, otherwise, NotImplementedError
-    is raised."""
+    is raised.
+
+    To bind a playlist to this class, use overide
+    :method:handlePlaylist method.
+    """
+    def __init__(self):
+        self.playlistHistory=PlaylistHistory()
+
+    def handlePlaylist(self):
+        raise NotImplementedError("you should implement MpdPlaylist.handlePlaylist method")
+
+    def generateMpdPlaylist(self):
+        p=self.handlePlaylist()
+        for i in range(len(p)):
+            p[i]['playlistPosition']=i
+        self.playlistHistory.addPlaylist(self.version(),p)
+        return p
+
+    def generateMpdPlaylistDiff(self,oldVersion):
+        self.generateMpdPlaylist()
+        return self.playlistHistory.diff(oldVersion)
+
     def songIdToPosition(self,id):
         raise NotImplementedError("you should implement MpdPlaylist.songIdToPosition method")
     def version(self):
         return 0
     def length(self):
-        return len(self.getMpdPlaylist())
-    def getMpdPlaylist(self):
-        return []
+        return len(self.generateMpdPlaylist())
     def move(self,fromPostion,toPosition):
         raise NotImplementedError("you should implement MpdPlaylist.move method")
     def moveId(self,fromId,toPosition):
         self.move(self.songIdToPosition(fromId),toPosition)
 
+
 class CommandPlaylist(CommandSong):
     def handle_playlist(self):
         """ Overwrite it to specify a real playlist. 
         Should return a list of dict song informations"""
-        return self.playlist.getMpdPlaylist()
+        return self.playlist.generateMpdPlaylist()
 
     def items(self):
         playlist=self.handle_playlist()
@@ -226,11 +298,10 @@ class ListPlaylistInfo(CommandSong): # Since 0.12
     """ List playlist 'playlistname' content """
     formatArg=[('playlistName',str)]
 
+class Add(Command): # todo return type
+    formatArg=[('song',str)]
+
 class TagTypes(Command):pass # Since 0.12
-class PlChanges(CommandPlaylist):
-    formatArg=[('playlistVersion',int)]
-    def handle_playlist(self):
-        return self.playlist.getMpdPlaylist()
 
 class PlaylistInfo(CommandPlaylist):
     """ Without song position, list all song in current playlist. With
@@ -238,22 +309,43 @@ class PlaylistInfo(CommandPlaylist):
     formatArg=[('songPosition',OptInt)]
     def handle_playlist(self):
         try :
-            return [self.playlist.getMpdPlaylist()[self.args['songPosition']]]
+            return [self.playlist.generateMpdPlaylist()[self.args['songPosition']]]
         except KeyError:pass
-        return self.playlist.getMpdPlaylist()
+        return self.playlist.generateMpdPlaylist()
+
+class PlaylistId(CommandPlaylist):
+    """ Without song position, list all song in current playlist. With
+    song position argument, get song details. """
+    formatArg=[('songId',OptInt)]
+    def handle_args(self,songId):
+        print songId
+    def handle_playlist(self):
+        try :
+            print "songId in playlistId" + str(self.args['songId'])
+            idx=self.playlist.songIdToPosition(self.args['songId'])
+            print "idx " + str(idx)
+            return [self.playlist.generateMpdPlaylist()[idx]]
+        except KeyError:pass
+        return self.playlist.generateMpdPlaylist()
 
 
-
-
-
-
-
-
-
-
-
-
-
+class SetVol(Command):
+    formatArg=[('volume',int)]
+    
+class PlChanges(CommandPlaylist):
+    formatArg=[('playlistVersion',int)]
+    def handle_playlist(self):
+        return self.playlist.generateMpdPlaylistDiff(self.args['playlistVersion'])
+    
+class PlChangesPosId(CommandItems):
+    formatArg=[('playlistVersion',int)]
+    def items(self):
+        p=self.playlist.generateMpdPlaylistDiff(self.args['playlistVersion'])
+        acc=[]
+        for s in p:
+            acc.append(('cpos',s['playlistPosition']))
+            acc.append(('Id',s['id']))
+        return acc
 
 
 

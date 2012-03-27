@@ -24,8 +24,8 @@ import logging
 from command import *
 
 logger=logging
-logger.basicConfig(level=logging.INFO)
-#logger.basicConfig(level=logging.DEBUG)
+#logger.basicConfig(level=logging.INFO)
+logger.basicConfig(level=logging.DEBUG)
 
 #logger.setLevel(logging.DEBUG)
 
@@ -72,10 +72,13 @@ class MpdRequestHandler(SocketServer.StreamRequestHandler):
               'lsinfo':LsInfo,
               'tagtypes':TagTypes,
               'playlistinfo':PlaylistInfo,
+              'playlistid':PlaylistId,
               'listplaylistinfo':ListPlaylistInfo,
               'plchanges':PlChanges,
               'moveid':MoveId,
-              'move':Move
+              'move':Move,
+              'add':Add,
+              'plchangesposid':PlChangesPosId
              }
 
     def __init__(self, request, client_address, server):
@@ -130,11 +133,12 @@ class MpdRequestHandler(SocketServer.StreamRequestHandler):
             cmd=pcmd[0]
             args=[a[1:len(a)-1] for a in pcmd[1:]]
             logger.debug("Command executed : %s %s" % (cmd,args))
+            if not self.commands.has_key(cmd):
+                logger.warning("Command '%s' is not supported!" % cmd)
+                raise CommandNotSupported(cmd)
             msg=self.commands[cmd](args,playlist=self.playlist).run()
-        except KeyError:
-            logger.warning("Command '%s' is not supported!" % cmd)
-            raise CommandNotSupported(cmd)
         except MpdCommandError : raise
+        except CommandNotSupported : raise
         except :
             logger.critical("Unexpected error on command %s: %s" % (c,sys.exc_info()[0]))
             raise
