@@ -1,8 +1,9 @@
 """ This is a partial mpd handler. It permits to use mpd client to control
 Pimp. Currently, a subset of playback commands are supported.
 
-To launch a mpd server, use :class:`Mpd`.
-Supported mpd commands are defined in :class:`MpdHandler`.
+To launch a mpd server, use :class:`Mpd`. Supported mpd commands are
+listed in :class:`MpdRequestHandler` which can be overrided. Basic
+commands implementation are defined in :mod:`command`.
 
 
 Note: 'command' and 'notcommand' commands seems to not be used by

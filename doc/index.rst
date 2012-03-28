@@ -11,6 +11,12 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
+.. automodule:: mpdserver
+   :members:
+.. automodule:: command
+   :members:
+
+
 Indices and tables
 ==================
 

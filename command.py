@@ -170,7 +170,7 @@ class MpdPlaylist(object):
     is raised.
 
     To bind a playlist to this class, use overide
-    :method:handlePlaylist method.
+    :method:`handlePlaylist` method.
     """
     def __init__(self):
         self.playlistHistory=PlaylistHistory()
@@ -219,6 +219,26 @@ class CommandPlaylist(CommandSong):
 ################################
 class PlayId(Command):
     formatArg=[('songId',OptInt)]
+
+class Pause(Command):
+    """ Override handle_pause and handle_unpause method """
+    formatArg=[('state',int)]
+    def handle_args(self,state): 
+        if state==1:
+            self.handle_pause()
+        else :
+            self.handle_unpause()
+    def handle_pause(self):pass
+    def handle_unpause(self):pass
+
+class Seek(Command):
+    """Skip to a specified point toSec in a song songPosition on the playlist"""
+    formatArg=[('songPosition',int),('toSec',int)]
+
+
+class PlayId(Command):
+    formatArg=[('songId',OptInt)]
+
     
 class Outputs(CommandItems):
     def items(self):
