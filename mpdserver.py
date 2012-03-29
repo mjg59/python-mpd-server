@@ -34,7 +34,7 @@ class MpdServer(SocketServer.ThreadingMixIn,SocketServer.TCPServer):
     """Treat a request from a mpd client.
     Just a subset of mpd commands are supported. See Commands variable"""
     def __init__(self,RequestHandlerClass,port=6600):
-        HOST, PORT = "localhost", port
+        HOST, PORT = "", port
         SocketServer.TCPServer.__init__(self,(HOST, PORT),RequestHandlerClass)
 
 
