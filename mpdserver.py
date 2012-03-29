@@ -78,8 +78,11 @@ class MpdRequestHandler(SocketServer.StreamRequestHandler):
               'plchanges':PlChanges,
               'moveid':MoveId,
               'move':Move,
+              'delete':Delete,
+              'deleteid':DeleteId,
               'add':Add,
-              'plchangesposid':PlChangesPosId
+              'plchangesposid':PlChangesPosId,
+              'password':Password
              }
 
     def __init__(self, request, client_address, server):

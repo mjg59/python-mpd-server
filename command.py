@@ -199,6 +199,11 @@ class MpdPlaylist(object):
         raise NotImplementedError("you should implement MpdPlaylist.move method")
     def moveId(self,fromId,toPosition):
         self.move(self.songIdToPosition(fromId),toPosition)
+    def delete(self,position):
+        raise NotImplementedError("you should implement MpdPlaylist.delete method")
+    def deleteId(self,songId):
+        self.delete(self.songIdToPosition(songId))
+        
 
 
 class CommandPlaylist(CommandSong):
@@ -313,6 +318,17 @@ class Move(Command): # Since 0.12
     formatArg=[('positionFrom',int),('positionTo',int)]
     def handle_args(self,positionFrom,positionTo):
         self.playlist.move(positionFrom,positionTo)
+
+class Delete(Command): # Since 0.12
+    formatArg=[('songPosition',int)]
+    def handle_args(self,songPosition):
+        self.playlist.delete(songPosition)
+class DeleteId(Command): # Since 0.12
+    formatArg=[('songId',int)]
+    def handle_args(self,songId):
+        self.playlist.deleteId(songId)
+
+        
     
 class ListPlaylistInfo(CommandSong): # Since 0.12
     """ List playlist 'playlistname' content """
@@ -368,6 +384,8 @@ class PlChangesPosId(CommandItems):
         return acc
 
 
+class Password(Command):
+    formatArg=[('pwd',str)]
 
 
 
