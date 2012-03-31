@@ -93,8 +93,10 @@ class MpdRequestHandler(SocketServer.StreamRequestHandler):
     def handle(self):
         """ Handle connection with mpd client. It gets client command,
         execute it and send a respond."""
-        welcome="OK MPD 0.16.0\n"
-        self.request.send(welcome)
+        welcome=u"OK MPD 0.13.0\n"
+#        welcome=u'\ufffd'
+        self.request.send(welcome.encode("utf-8"))
+#        self.request.send(unicode(welcome,"utf-8"))
         while True:
             msg=""
             try:
@@ -124,7 +126,13 @@ class MpdRequestHandler(SocketServer.StreamRequestHandler):
                 else:
                     msg=msg+"OK\n"
                 logger.debug("Message sent:\n\t\t"+msg.replace("\n","\n\t\t"))
-                self.request.send(msg)
+#                try:
+                umsg=unicode(msg,"utf-8",errors='replace')
+#                    self.request.send(msg.encode("utf-8",'ignore'))
+#                except UnicodeEncodeError as e:
+#                    print e
+#                    print 'pb'+msg[3430:3452]
+                self.request.send(umsg.encode("utf-8"))
             except IOError,e:
                 logger.debug("Client disconnected (%s)"% threading.currentThread().getName())
                 break

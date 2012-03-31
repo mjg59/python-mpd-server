@@ -69,16 +69,20 @@ class CommandItems(Command):
 
 class CommandSong(CommandItems):
     """ Generate songs information for mpd clients """
-    def helper_mkSong(self,file,title="",time=0,album="",artist="",track=0,playlistPosition=0,id=0):
+    def helper_mkSong(self,file,title=None,time=0,album=None,artist=None,track=0,playlistPosition=0,id=0):
         """ Helpers to create a mpd song """
-        return [('file',file),
-                ('Time',time),
-                ('Album',album),
-                ('Artist',artist),
-                ('Title',title),
-                ('Track',track),
-                ('Pos',playlistPosition),
-                ('Id',id)]
+        ret=[('file',file),
+             ('Time',time)]
+        if not album:
+            ret+=[('Album',album)]
+        if not artist:
+            ret+=[('Artist',artist)]
+        if not title:
+            ret+=[('Title',title)]
+        ret+=[('Track',track),
+              ('Pos',playlistPosition),
+              ('Id',id)]
+        return ret
     def song(self):return [] #self.helper_mkSong("/undefined/")
     """ Override it to adapt this command """
     def items(self):return self.song()
@@ -307,7 +311,7 @@ class NotCommands(CommandItems): pass# Not used by gmpc
     #     return [('command','tagtypes'),
     #             ('command','lsinfo')]
 
-class LsInfo(Command): # Since 0.12
+class LsInfo(CommandItems): # Since 0.12
     formatArg=[('directory',OptStr)]
 
 class MoveId(Command): # Since 0.12
