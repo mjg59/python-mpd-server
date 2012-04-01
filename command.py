@@ -223,6 +223,9 @@ class CommandPlaylist(CommandSong):
 ################################
 # Default Commands Definitions #
 ################################
+class Random(Command):
+    formatArg=[('state',int)]
+
 class PlayId(Command):
     formatArg=[('songId',OptInt)]
 
