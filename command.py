@@ -80,9 +80,10 @@ class CommandSong(CommandItems):
                 ('Pos',playlistPosition),
                 ('Id',id)]
 
-    def song(self):return [] #self.helper_mkSong("/undefined/")
-    """ Override it to adapt this command """
-    def items(self):return self.song()
+    def songs(self):return [] #self.helper_mkSong("/undefined/")
+    """ Override it to adapt this command. This must return a list of
+    songs (see helper_mkSong method). """
+    def items(self):return self.songs()
         
 
 import types
@@ -310,6 +311,7 @@ class NotCommands(CommandItems): pass# Not used by gmpc
     # def items(self):
     #     return [('command','tagtypes'),
     #             ('command','lsinfo')]
+class Commands(CommandItems): pass# Not used by gmpc
 
 class LsInfo(CommandItems): # Since 0.12
     formatArg=[('directory',OptStr)]
@@ -391,6 +393,24 @@ class PlChangesPosId(CommandItems):
 class Password(Command):
     formatArg=[('pwd',str)]
 
+
+# Playlist Management
+class ListPlaylists(CommandItems):
+    def handle_playlists(self):
+        """ Should return list of plyalist name"""
+        pass
+    def items(self):
+        return [("playlist",p) for p in self.handle_playlists()]
+
+class Load(Command):
+    """ Load a playlist in current playlist. Songs are added to
+    current playlist."""
+    formatArg=[('playlistName',str)]
+class Save(Command):
+    formatArg=[('playlistName',str)]
+
+class Rm(Command):
+    formatArg=[('playlistName',str)]
 
 
 

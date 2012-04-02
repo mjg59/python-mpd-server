@@ -70,6 +70,7 @@ class MpdRequestHandler(SocketServer.StreamRequestHandler):
               'status':Status,
               'stats':Stats,
               'notcommands':NotCommands,
+              'commands':Commands,
               'lsinfo':LsInfo,
               'tagtypes':TagTypes,
               'playlistinfo':PlaylistInfo,
