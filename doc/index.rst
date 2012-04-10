@@ -37,10 +37,10 @@ handle them with :meth:`Command.handle_args`.
 
 .. automodule:: mpdserver
    :members:
-.. autoclass:: Command
-   :members:
 
 
+Command Lists
+----------------------------------
 .. automodule:: command
    :members:
 

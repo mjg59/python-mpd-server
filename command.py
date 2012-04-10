@@ -8,20 +8,22 @@ class CommandArgumentException(Exception):pass
         
 
 class Command():
-    """ You can define argument format by setting formatArg
-    attribute. Command argument can be accessed with self.args
-    dictionnary. 
+    """ Command class is the base command class. You can define
+    argument format by setting formatArg attribute. Command argument
+    can be accessed with self.args dictionnary.
 
     Each command has a playlist attribute which is given by
     MpdRequestHandler. This playlist must implement MpdPlaylist class
     and by default, this one is used.
     """
     formatArg=[]
-    def __init__(self,args,playlist):
+    def __init__(self,args,playlist,user):
             self.args=self.__parseArg(args)
             self.playlist=playlist
+            self.user=user
 
     def run(self):
+        """ To treat a command. This class handle_args method and toMpdMsg method."""
         try:
             self.handle_args(**(self.args))
             return self.toMpdMsg()
@@ -45,9 +47,12 @@ class Command():
         except ValueError as e:
             raise CommandArgumentException("Wrong argument type: %s command arguments should be %s instead of %s (%s)" %(self.__class__,self.formatArg,args,e))
         return d
-        
-    def handle_args(self,**kwargs):logger.debug("Parsing arguments %s in %s" % (str(kwargs),str(self.__class__)))
+    
+    def handle_args(self,**kwargs):
+        """ Override this method to treat commands arguments."""
+        logger.debug("Parsing arguments %s in %s" % (str(kwargs),str(self.__class__)))
     def toMpdMsg(self):
+        """ Override this method to send a specific respond to mpd client."""
         logger.debug("Not implemented respond for command %s"%self.__class__)
         return ""
 
@@ -55,10 +60,13 @@ class CommandDummy(Command):
     def toMpdMsg(self):
         logger.info("Dummy respond sent for command %s"%self.__class__)
         return "ACK [error@command_listNum] {%s} Dummy respond for command '%s'\n" % (self.__class__,self.__class__)
-    
 
 class CommandItems(Command):
+    """ This is a subclass of :class:`Command` class. CommandItems is used to
+    send items respond such as :class:`Status` command. """
     def items(self):return []
+    """ Overwrite this method to send items to mpd client. This method
+    must return a list a tuples ("key",value)."""
     def toMpdMsg(self):
         items=self.items()
         acc=""
@@ -68,7 +76,8 @@ class CommandItems(Command):
 
 
 class CommandSong(CommandItems):
-    """ Generate songs information for mpd clients """
+    """ This is a subclass of :class:`Command` class. Respond songs
+    information for mpd clients"""
     def helper_mkSong(self,file,title=" ",time=0,album=" ",artist=" ",track=0,playlistPosition=0,id=0):
         """ Helpers to create a mpd song """
         return [('file',file),
@@ -80,7 +89,7 @@ class CommandSong(CommandItems):
                 ('Pos',playlistPosition),
                 ('Id',id)]
 
-    def songs(self):return [] #self.helper_mkSong("/undefined/")
+    def songs(self): return [] #self.helper_mkSong("/undefined/")
     """ Override it to adapt this command. This must return a list of
     songs (see helper_mkSong method). """
     def items(self):return self.songs()
@@ -172,7 +181,7 @@ class MpdPlaylist(object):
     is raised.
 
     To bind a playlist to this class, use overide
-    :method:`handlePlaylist` method.
+    `handlePlaylist` method.
     """
     def __init__(self):
         self.playlistHistory=PlaylistHistory()
@@ -391,8 +400,11 @@ class PlChangesPosId(CommandItems):
 
 
 class Password(Command):
+    """ Set username of connexion."""
     formatArg=[('pwd',str)]
-
+    def handle_args(self,pwd):
+        self.user.set_user(pwd)
+    
 
 # Playlist Management
 class ListPlaylists(CommandItems):

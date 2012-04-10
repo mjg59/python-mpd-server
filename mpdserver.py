@@ -61,6 +61,13 @@ class CommandNotImplemented(MpdCommandError):
     def toMpdMsg(self):
         return "ACK [error@command_listNum] {%s} Command '%s' is not implemented (%s)\n" % (self.commandName,self.commandName,self.message)
 
+class User(object):
+    user=None
+    def set_user(self,username):
+        self.user=username
+    def get_user(self):
+        return self.user
+        
 
 class MpdRequestHandler(SocketServer.StreamRequestHandler):
     """ Manage the connection from a mpd client. Each client
@@ -89,6 +96,7 @@ class MpdRequestHandler(SocketServer.StreamRequestHandler):
 
     def __init__(self, request, client_address, server):
         self.playlist=self.Playlist()
+        self.user=User()
         logger.debug( "Client connected (%s)" % threading.currentThread().getName())
         SocketServer.StreamRequestHandler.__init__(self,request,client_address,server)
 
@@ -139,11 +147,11 @@ class MpdRequestHandler(SocketServer.StreamRequestHandler):
             pcmd=[m.group() for m in re.compile('(\w+)|("([^"])+")').finditer(c)] # WARNING An argument cannot contains a '"'
             cmd=pcmd[0]
             args=[a[1:len(a)-1] for a in pcmd[1:]]
-            logger.debug("Command executed : %s %s" % (cmd,args))
+            logger.debug("Command executed : %s %s by user '%s'" % (cmd,args,self.user.get_user()))
             if not self.commands.has_key(cmd):
                 logger.warning("Command '%s' is not supported!" % cmd)
                 raise CommandNotSupported(cmd)
-            msg=self.commands[cmd](args,playlist=self.playlist).run()
+            msg=self.commands[cmd](args,playlist=self.playlist,user=self.user).run()
         except MpdCommandError : raise
         except CommandNotSupported : raise
         except :
