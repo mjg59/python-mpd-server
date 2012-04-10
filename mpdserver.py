@@ -31,8 +31,8 @@ logger.basicConfig(level=logging.DEBUG)
 #logger.setLevel(logging.DEBUG)
 
 class MpdServer(SocketServer.ThreadingMixIn,SocketServer.TCPServer):
-    """Treat a request from a mpd client.
-    Just a subset of mpd commands are supported. See Commands variable"""
+    """Treat a request from mpd clients. It takes a
+    :class:`RequestHandlerClass` which define supported commands."""
     def __init__(self,RequestHandlerClass,port=6600):
         HOST, PORT = "", port
         SocketServer.TCPServer.__init__(self,(HOST, PORT),RequestHandlerClass)
@@ -63,7 +63,8 @@ class CommandNotImplemented(MpdCommandError):
 
 
 class MpdRequestHandler(SocketServer.StreamRequestHandler):
-    """ Manage the connection with a mpd client """
+    """ Manage the connection from a mpd client. Each client
+    connection instances this object."""
     Playlist=MpdPlaylist
     commands={'currentsong':CurrentSong,
               'outputs':Outputs,
@@ -95,9 +96,7 @@ class MpdRequestHandler(SocketServer.StreamRequestHandler):
         """ Handle connection with mpd client. It gets client command,
         execute it and send a respond."""
         welcome=u"OK MPD 0.13.0\n"
-#        welcome=u'\ufffd'
         self.request.send(welcome.encode("utf-8"))
-#        self.request.send(unicode(welcome,"utf-8"))
         while True:
             msg=""
             try:
@@ -127,12 +126,7 @@ class MpdRequestHandler(SocketServer.StreamRequestHandler):
                 else:
                     msg=msg+"OK\n"
                 logger.debug("Message sent:\n\t\t"+msg.replace("\n","\n\t\t"))
-#                try:
                 umsg=unicode(msg,"utf-8",errors='replace')
-#                    self.request.send(msg.encode("utf-8",'ignore'))
-#                except UnicodeEncodeError as e:
-#                    print e
-#                    print 'pb'+msg[3430:3452]
                 self.request.send(umsg.encode("utf-8"))
             except IOError,e:
                 logger.debug("Client disconnected (%s)"% threading.currentThread().getName())
