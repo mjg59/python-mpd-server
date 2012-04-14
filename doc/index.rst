@@ -3,11 +3,15 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+.. toctree::
+   :maxdepth: 2
+
 Welcome to python-mpd-server's documentation!
 ============================================= 
 
 Getting Started
 ---------------
+An example of a basic use is available in :ref:`example`.
 
 Python-mpd-server library defines a default server in :mod:`mpdserver` module
 and some defaults commands in :mod:`command` module.
@@ -24,28 +28,25 @@ For example, to bind play command with your player ::
         def handle_args(self):yourplayer.play()
     mpdserver.MpdRequestHandler.commands['play']=Play
 
-Bind a player to python-mpd-server
+Launching python mpd server
 ----------------------------------
-
-:class:`mpdserver.Command` is a command base class, all commands inherit from
-it. A :class:`Command` contains command arguments definition. You can
-handle them with :meth:`Command.handle_args`.
-
-
-.. toctree::
-   :maxdepth: 2
-
 .. automodule:: mpdserver
    :members:
 
 
-Command Lists
+Defining Commands
 ----------------------------------
 .. automodule:: command
    :members:
 
 
+.. _example:
 
+Basic Example
+-------------
+This is a simple example of how to use python-mpd-server.
+
+.. literalinclude:: mpd_server_example.py
 
 
 Indices and tables

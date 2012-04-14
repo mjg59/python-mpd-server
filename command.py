@@ -1,3 +1,23 @@
+""" 
+This module permits to define mpd commands. Each command inherits from
+:class:`Command` which is a command base class. There are
+also some specialized subclasses of :class:`Command`:
+
+- :class:`CommandItems` can be used when respond is a list of items
+- :class:`CommandSong` can be used when respond is a list of songs
+- :class:`CommandPlaylist` can be used when respond is a list of songs
+
+To bind your playlist with mpd playlist commands
+(:class:`command.Move`, :class:`command.Delete`, ...), you can override
+:class:`MpdPlaylist`.
+
+
+
+Note: 'command' and 'notcommand' commands seems to not be used by
+gmpc. Then, we have to implement a lot of commands with dummy
+respond. However, gmpc use 'command' command to allow user to play,
+pause ...
+"""
 import logging
 import mpdserver
 logger=mpdserver.logging
@@ -9,21 +29,35 @@ class CommandArgumentException(Exception):pass
 
 class Command():
     """ Command class is the base command class. You can define
-    argument format by setting formatArg attribute. Command argument
-    can be accessed with self.args dictionnary.
+    argument format by setting :attr:`formatArg`. Command argument
+    can be accessed with :attr:`args` dictionnary.
 
     Each command has a playlist attribute which is given by
     MpdRequestHandler. This playlist must implement MpdPlaylist class
     and by default, this one is used.
+
+    :class:`Command` contains command
+    arguments definition via :attr:`Command.formatArg`. You can handle
+    them with :func:`Command.handle_args`.
     """
+
     formatArg=[]
+    """ To specify command arguments format. For example, ::
+    
+       formatArg=[("song",OptStr)] 
+
+    means command accept a optionnal
+    string argument bound to `song` attribute name."""
+    args={}
+    """ A dictionnary of received arguments from mpd client. They must
+    be defined in :attr:`formatArg`."""
     def __init__(self,args,playlist,user):
             self.args=self.__parseArg(args)
             self.playlist=playlist
             self.user=user
 
     def run(self):
-        """ To treat a command. This class handle_args method and toMpdMsg method."""
+        """To treat a command. This class handle_args method and toMpdMsg method."""
         try:
             self.handle_args(**(self.args))
             return self.toMpdMsg()
@@ -62,11 +96,12 @@ class CommandDummy(Command):
         return "ACK [error@command_listNum] {%s} Dummy respond for command '%s'\n" % (self.__class__,self.__class__)
 
 class CommandItems(Command):
-    """ This is a subclass of :class:`Command` class. CommandItems is used to
-    send items respond such as :class:`Status` command. """
-    def items(self):return []
-    """ Overwrite this method to send items to mpd client. This method
-    must return a list a tuples ("key",value)."""
+    """ This is a subclass of :class:`Command` class. CommandItems is
+    used to send items respond such as :class:`command.Status` command."""
+    def items(self):
+        """ Overwrite this method to send items to mpd client. This method
+        must return a list a tuples ("key",value)."""
+        return []
     def toMpdMsg(self):
         items=self.items()
         acc=""
@@ -74,37 +109,20 @@ class CommandItems(Command):
             acc+="%s: %s\n"%(i,str(v))
         return acc
 
-
-class CommandSong(CommandItems):
-    """ This is a subclass of :class:`Command` class. Respond songs
-    information for mpd clients"""
-    def helper_mkSong(self,file,title=" ",time=0,album=" ",artist=" ",track=0,playlistPosition=0,id=0):
-        """ Helpers to create a mpd song """
-        return [('file',file),
-                ('Time',time),
-                ('Album',album),
-                ('Artist',artist),
-                ('Title',title),
-                ('Track',track),
-                ('Pos',playlistPosition),
-                ('Id',id)]
-
-    def songs(self): return [] #self.helper_mkSong("/undefined/")
-    """ Override it to adapt this command. This must return a list of
-    songs (see helper_mkSong method). """
-    def items(self):return self.songs()
-        
-
-import types
-class Opt(object):pass
-class OptInt(Opt,types.IntType):pass
-class OptStr(Opt,types.StringType):pass
-
 class MpdSong(object):
     """ To create a mpd song. To kind of mpd song exist : in a playlist or not.
-    If songId is not set, an id is generated with generatePlaylistSongId method."""
+    If songId is not set, an id is generated with generatePlaylistSongId method.
 
-    def __init__(self,file,title="",time=0,album="",artist="",track=0,playlistPosition=None,songId=None):
+    Different kind of song are used by mpd. When the song is not in a
+    playlist (library song for instance), no playlistPosition field
+    are provided. In this case, don't specify playlistPostion.
+
+    Moreover, mpd use a song id which is unique for all song in
+    playlist and stable over time. This field is automatically
+    generated.
+    """
+
+    def __init__(self,file,title="",time=0,album="",artist="",track=0,playlistPosition=None):
         self.file=file
         self.title=title
         self.time=time
@@ -118,6 +136,48 @@ class MpdSong(object):
             self.id
     def generatePlaylistSongId(self,song):
         return id(song)
+
+
+class CommandSong(CommandItems):
+    """ This is a subclass of :class:`Command` class. Respond songs
+    informations for mpd clients. This is used when songs are not in a playlist (no playlistposition field)."""
+    def helper_mkSong(self,file,title=" ",time=0,album=" ",artist=" ",track=0,playlistPosition=0,id=0):
+        """ Helper to create a mpd song """
+        return [('file',file),
+                ('Time',time),
+                ('Album',album),
+                ('Artist',artist),
+                ('Title',title),
+                ('Track',track),
+                ('Pos',playlistPosition),
+                ('Id',id)]
+
+    def songs(self): 
+        """ Override it to adapt this command. This must return a list of
+        songs (see :func:`helper_mkSong`). """
+        return [] #self.helper_mkSong("/undefined/")
+    def items(self):return self.songs()
+        
+
+&class CommandPlaylist(CommandSong):
+    def handle_playlist(self):
+        """ Overwrite it to specify a real playlist. 
+        Should return a list of dict song informations"""
+        return self.playlist.generateMpdPlaylist()
+
+    def items(self):
+        playlist=self.handle_playlist()
+        acc=[]
+        for s in playlist:
+            acc+=self.helper_mkSong(**s)
+        return acc
+
+
+import types
+class Opt(object):pass
+class OptInt(Opt,types.IntType):pass
+class OptStr(Opt,types.StringType):pass
+
 
 class PlaylistHistory(object):
     """ Contains all playlist version to generate playlist diff (see
@@ -201,6 +261,7 @@ class MpdPlaylist(object):
         return self.playlistHistory.diff(oldVersion)
 
     def songIdToPosition(self,id):
+        """ This method MUST be implemented. It permits to generate the position from a mpd song id."""
         raise NotImplementedError("you should implement MpdPlaylist.songIdToPosition method")
     def version(self):
         return 0
@@ -216,19 +277,6 @@ class MpdPlaylist(object):
         self.delete(self.songIdToPosition(songId))
         
 
-
-class CommandPlaylist(CommandSong):
-    def handle_playlist(self):
-        """ Overwrite it to specify a real playlist. 
-        Should return a list of dict song informations"""
-        return self.playlist.generateMpdPlaylist()
-
-    def items(self):
-        playlist=self.handle_playlist()
-        acc=[]
-        for s in playlist:
-            acc+=self.helper_mkSong(**s)
-        return acc
 
 ################################
 # Default Commands Definitions #
@@ -279,6 +327,7 @@ class Stats(CommandItems):
                 ("db_update",-1)]  #last db update in UNIX time 
 
 class Status(CommandItems):
+    """ Manage mpd status """
     def helper_status_common(self,volume=0,repeat=0,random=0,xfade=0):
         "Status is set to 'stop' by default. Use :method:play or :method:pause to set status"
         return [('volume',volume), #(0-100)  
@@ -330,11 +379,13 @@ class MoveId(Command): # Since 0.12
     def handle_args(self,idFrom,positionTo):
         self.playlist.moveId(idFrom,positionTo)
 class Move(Command): # Since 0.12
+    """ To move a song at positionFrom to postionTo."""
     formatArg=[('positionFrom',int),('positionTo',int)]
     def handle_args(self,positionFrom,positionTo):
         self.playlist.move(positionFrom,positionTo)
 
 class Delete(Command): # Since 0.12
+    """ To delete the song at songPosition from current playlist. """
     formatArg=[('songPosition',int)]
     def handle_args(self,songPosition):
         self.playlist.delete(songPosition)
@@ -427,14 +478,14 @@ class Rm(Command):
 
 
 
-class MpdReturnType(object):
-    def checkType(self,cls,cls2=None):
-        if type(self) is cls or (cls2!=None and type(self) is cls2):
-            return self.toMpdMsg()
-        else: raise MpdErrorMsgFormat
-    def toMpdMsg(self):
-        logger.info("Dummy respond sent for command %s"%type(self))
-        return ""
+# class MpdReturnType(object):
+#     def checkType(self,cls,cls2=None):
+#         if type(self) is cls or (cls2!=None and type(self) is cls2):
+#             return self.toMpdMsg()
+#         else: raise MpdErrorMsgFormat
+#     def toMpdMsg(self):
+#         logger.info("Dummy respond sent for command %s"%type(self))
+#         return ""
 
 
 # class MpdPlaylist(MpdReturnType):

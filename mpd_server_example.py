@@ -1,4 +1,5 @@
 #!/usr/bin/python
+""" This is a simple howto example."""
 import mpdserver
 
 
@@ -34,8 +35,6 @@ class PlayId(mpdserver.PlayId):
 mpdserver.MpdRequestHandler.commands['outputs']=Outputs
 mpdserver.MpdRequestHandler.commands['playid']=PlayId
 mpdserver.MpdRequestHandler.Playlist=MpdPlaylist
-
-
 
 print "Starting a mpd server on port 9999"
 print "Type Ctrl+C to exit\n"

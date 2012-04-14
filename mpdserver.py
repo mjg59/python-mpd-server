@@ -1,15 +1,11 @@
-""" This is a partial mpd handler. It permits to use mpd client to control
-Pimp. Currently, a subset of playback commands are supported.
+""" This module permits to use mpd client to control another player.
 
-To launch a mpd server, use :class:`Mpd`. Supported mpd commands are
-listed in :class:`MpdRequestHandler` which can be overrided. Basic
-commands implementation are defined in :mod:`command`.
+To launch a mpd server, use :class:`Mpd`. :class:`MpdRequestHandler`
+treats a client connection. Supported command are listed in
+:attr:`MpdRequestHandler.commands`. For more informations about
+command definition, see :class:`command.Command`
 
 
-Note: 'command' and 'notcommand' commands seems to not be used by
-gmpc. Then, we have to implement a lot of commands with dummy
-respond. However, gmpc use 'command' command to allow user to play,
-pause ...
 """
 import SocketServer
 SocketServer.TCPServer.allow_reuse_address = True
@@ -93,6 +89,8 @@ class MpdRequestHandler(SocketServer.StreamRequestHandler):
               'plchangesposid':PlChangesPosId,
               'password':Password
              }
+    """ Dict of supported commands. The key is the mpd command, the
+    value the class which treats this command. """
 
     def __init__(self, request, client_address, server):
         self.playlist=self.Playlist()
