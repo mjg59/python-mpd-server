@@ -18,7 +18,8 @@ import sys
 #import pimp.core.db
 import logging
 
-from command import *
+from command_base import *
+from command_skel import *
 
 logger=logging
 #logger.basicConfig(level=logging.INFO)

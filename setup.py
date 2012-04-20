@@ -8,5 +8,5 @@ setup(name='python-mpd-server',
       author='kedals',
       author_email='kedals0@gmail.com',
       url='http://www.python.org/sigs/distutils-sig/',
-      py_modules=["mpdserver","command"],
+      py_modules=["mpdserver","command_base","command_skel"],
      )

@@ -36,8 +36,14 @@ Launching python mpd server
 
 Defining Commands
 ----------------------------------
-.. automodule:: command
+.. automodule:: command_base
    :members:
+
+Command Squeletons
+-------------------
+.. automodule:: command_skel
+   :members:
+
 
 
 .. _example:

@@ -12,13 +12,10 @@ class Outputs(mpdserver.Outputs):
 
 
 class MpdPlaylist(mpdserver.MpdPlaylist):
-    playlist=[{'file':'file0','title':'title0','time':0,'album':'album0','artist':'artist0','track':0,'id':0},
-              {'file':'file1','title':'title1','time':1,'album':'album1','artist':'artist1','track':1,'id':1},
-              {'file':'file2','title':'title2','time':2,'album':'album2','artist':'artist2','track':2,'id':2},
-              {'file':'file3','title':'title3','time':3,'album':'album3','artist':'artist3','track':3,'id':3}]
+    playlist=[mpdserver.MpdPlaylistSong(file='file0',songId=0,playlistPosition=0,title='title0',time=0,album='album0',artist='artist0',track=0)]
     def songIdToPosition(self,i):
         for e in self.playlist:
-            if e['id']==i : return e['playlistPosition']
+            if e.id==i : return e.playlistPosition
             
     def handlePlaylist(self):
         print 'iuoo'
