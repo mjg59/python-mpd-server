@@ -2,46 +2,42 @@
 """ This is a simple howto example."""
 import mpdserver
 
+# Define a playid command based on mpdserver.PlayId squeleton
+class PlayId(mpdserver.PlayId):
+    # This method is called when playid command is sent by a client
+    def handle_args(self,songId):print "Play a file with Id '%d'" %songId
 
-class Outputs(mpdserver.Outputs):
-    def items(self):
-        return [('outputid',0),        # <int output> the output number                              
-                ('outputname','test here'), # <str name> the name as defined in the MPD configuration file
-                ('outputenabled',1)    # <int enabled> 1 if enabled, 0 if disabled                   
-                ]
-
-
+# Define a MpdPlaylist based on mpdserver.MpdPlaylist
+# This class permits to generate adapted mpd respond on playlist command.
 class MpdPlaylist(mpdserver.MpdPlaylist):
-    playlist=[mpdserver.MpdPlaylistSong(file='file0',songId=0,playlistPosition=0,title='title0',time=0,album='album0',artist='artist0',track=0)]
+    playlist=[mpdserver.MpdPlaylistSong(file='file0',songId=0)]
+    # How to get song position from a song id in your playlist
     def songIdToPosition(self,i):
         for e in self.playlist:
             if e.id==i : return e.playlistPosition
-            
+    # Set your playlist. It must be a list a MpdPlaylistSong
     def handlePlaylist(self):
-        print 'iuoo'
         return self.playlist
-
+    # Move song in your playlist
     def move(self,i,j):
-        print "move "
         self.playlist[i],self.playlist[j]=self.playlist[j],self.playlist[i]
 
-class PlayId(mpdserver.PlayId):
-    def handle_args(self,songId):print "iop"
-
-
-mpdserver.MpdRequestHandler.commands['outputs']=Outputs
-mpdserver.MpdRequestHandler.commands['playid']=PlayId
-mpdserver.MpdRequestHandler.Playlist=MpdPlaylist
+# Create a deamonized mpd server that listen on port 9999
+mpd=mpdserver.MpdServerDaemon(9999)
+# Register provided outputs command 
+mpd.requestHandler.RegisterCommand(mpdserver.Outputs)
+# Register your own command implementation
+mpd.requestHandler.RegisterCommand(PlayId)
+# Set the user defined playlist class
+mpd.requestHandler.Playlist=MpdPlaylist
+#mpd.requestHandler.Playlist=mpdserver.MpdPlaylistDummy
 
 print "Starting a mpd server on port 9999"
 print "Type Ctrl+C to exit\n"
-mpd=mpdserver.Mpd(9999)
-
 if __name__ == "__main__":
     try:
         while mpd.wait(1) : pass
     except KeyboardInterrupt:
         print "Stopping mpd server"
         mpd.quit()
-
 

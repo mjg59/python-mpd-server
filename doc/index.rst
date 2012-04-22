@@ -9,11 +9,12 @@
 Welcome to python-mpd-server's documentation!
 ============================================= 
 
-python-mpd-server permits to bind a player to a MPD server. You then
-can control your player with a MPD client such as sonata or gmpc. This
-module defines a server which manages client requests, parses a
-request and generates a respond. A MPD command is a class that you can
-override.
+python-mpd-server permits to bind a player to a MPD server. 
+
+You then can control your player with a MPD client such as sonata or
+gmpc. This module defines a server which manages client requests,
+parses a request and generates a respond. A MPD command is a class
+that you can override.
 
 Current supported features are:
 

@@ -10,25 +10,24 @@ class PlayId(Command):
     formatArg=[('songId',OptInt)]
 
 class Pause(Command):
-    """ Override handle_pause and handle_unpause method """
+    """ Override :func:`handle_pause` and :func:`handle_unpause` method """
     formatArg=[('state',int)]
     def handle_args(self,state): 
         if state==1:
             self.handle_pause()
         else :
             self.handle_unpause()
-    def handle_pause(self):pass
-    def handle_unpause(self):pass
+    def handle_pause(self):
+        """When pause is set"""
+        pass
+    def handle_unpause(self):
+        """When pause is unset"""
+        pass
 
 class Seek(Command):
     """Skip to a specified point toSec in a song songPosition on the playlist"""
     formatArg=[('songPosition',int),('toSec',int)]
 
-
-class PlayId(Command):
-    formatArg=[('songId',OptInt)]
-
-    
 class Outputs(CommandItems):
     def items(self):
         return [('outputid',0),        # <int output> the output number                              
@@ -144,13 +143,10 @@ class PlaylistId(CommandSongs):
     """ Without song position, list all song in current playlist. With
     song position argument, get song details. """
     formatArg=[('songId',OptInt)]
-    def handle_args(self,songId):
-        print songId
+    def handle_args(self,songId):pass
     def songs(self):
         try :
-            print "songId in playlistId" + str(self.args['songId'])
             idx=self.playlist.songIdToPosition(self.args['songId'])
-            print "idx " + str(idx)
             return [self.playlist.generateMpdPlaylist()[idx]]
         except KeyError:pass
         return self.playlist.generateMpdPlaylist()
@@ -174,13 +170,12 @@ class PlChangesPosId(CommandItems):
             acc.append(('Id',s['id']))
         return acc
 
-
 class Password(Command):
     """ Set username of connexion."""
     formatArg=[('pwd',str)]
     def handle_args(self,pwd):
-        self.user.set_user(pwd)
-    
+        if not self.frontend.set(pwd):
+            raise MpdCommandError("User '%s' doesn't exist"%pwd,"password")
 
 # Playlist Management
 class ListPlaylists(CommandItems):

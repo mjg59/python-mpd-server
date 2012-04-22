@@ -66,10 +66,11 @@ class Command():
     args={}
     """ A dictionnary of received arguments from mpd client. They must
     be defined in :attr:`formatArg`."""
-    def __init__(self,args,playlist,user):
+
+    def __init__(self,args,playlist,frontend):
             self.args=self.__parseArg(args)
             self.playlist=playlist
-            self.user=user
+            self.frontend=frontend
 
     def run(self):
         """To treat a command. This class handle_args method and toMpdMsg method."""
@@ -78,6 +79,13 @@ class Command():
             return self.toMpdMsg()
         except NotImplementedError as e:
             raise mpdserver.CommandNotImplemented(self.__class__,str(e))
+        
+    @classmethod
+    def GetCommandName(cls):
+        """ MPD command name. Command name is the lower class
+        name. This string is used to parse a client request. You can
+        override this classmethod to define particular commandname."""
+        return cls.__name__.lower()
 
     def __parseArg(self,args):
         if len(args) > len(self.formatArg):
@@ -276,7 +284,7 @@ class MpdPlaylist(object):
     def handlePlaylist(self):
         """ Implement this method to bind your playlist with mpd
         playlist. This method should return a list of :class:`MpdPlaylistSong`."""
-        raise NotImplementedError("you should implement MpdPlaylist.handlePlaylist method")
+        raise NotImplementedError("you should implement MpdPlaylist.handlePlaylist method (or use MpdPlaylistDummy) ")
 
     def generateMpdPlaylist(self):
         """ This is an internal method to automatically add playlistPosition to songs in playlist. """
@@ -308,3 +316,9 @@ class MpdPlaylist(object):
     def deleteId(self,songId):
         self.delete(self.songIdToPosition(songId))
 
+
+class MpdPlaylistDummy(MpdPlaylist):
+    def handlePlaylist(self):
+        logger.warning("Dummy implementation of handlePlaylist method")
+        return []
+        
