@@ -117,6 +117,7 @@ class MpdRequestHandler(SocketServer.StreamRequestHandler):
     """ Manage the connection from a mpd client. Each client
     connection instances this object."""
     Playlist=MpdPlaylist
+    __player=None
     __SupportedCommands={'currentsong'      :{'class':CurrentSong,'users':['default'],'mpdVersion':"0.12",'neededBy':["sonata"]},
                          'outputs'          :{'class':Outputs,'users':['default'],'mpdVersion':"0.12",'neededBy':["gmpc"]},
                          'status'           :{'class':Status,'users':['default'],'mpdVersion':"0.12",'neededBy':["sonata"]},
@@ -208,7 +209,7 @@ class MpdRequestHandler(SocketServer.StreamRequestHandler):
             args=[a[1:len(a)-1] for a in pcmd[1:]]
             logger.debug("Command executed : %s %s for frontend '%s'" % (cmd,args,self.frontend.get()))
             commandCls=self.__getCommandClass(cmd,self.frontend)
-            msg=commandCls(args,playlist=self.playlist,frontend=self.frontend).run()
+            msg=commandCls(args,playlist=self.playlist,frontend=self.frontend,player=self.__class__.__player).run()
         except MpdCommandError : raise
         except CommandNotSupported : raise
         except :
@@ -255,6 +256,17 @@ class MpdRequestHandler(SocketServer.StreamRequestHandler):
             return self.__SupportedCommands[commandName]['class']
 
 
+    @classmethod
+    def SetPlayer(cls,player):
+        """To set player object. It is passed to executed commands."""
+        cls.__player=player
+    @classmethod
+    def GetPlayer(cls):
+        """To get player object associated to pympdserver."""
+        return cls.__player
+        
+            
+
 class MpdServer(SocketServer.ThreadingMixIn,SocketServer.TCPServer):
     """ Create a MPD server. By default, a request is treated via
     :class:`MpdRequestHandler` class but you can specify an alternative
@@ -284,6 +296,7 @@ class MpdServerDaemon(MpdServer):
         
     def quit(self):
         """Stop MPD server deamon."""
+        logger.info("Quiiting Mpd Server")
         self.shutdown()
 
     def wait(self,timeout=None):
