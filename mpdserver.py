@@ -144,11 +144,12 @@ class MpdRequestHandler(SocketServer.StreamRequestHandler):
                          'seek'            :{'class':None,'users':[],'mpdVersion':"0.12",'neededBy':None},
                          'pause'            :{'class':None,'users':[],'mpdVersion':"0.12",'neededBy':None},
                          'next'            :{'class':None,'users':[],'mpdVersion':"0.12",'neededBy':None},
-                         'prev'            :{'class':None,'users':[],'mpdVersion':"0.12",'neededBy':None},
+                         'previous'            :{'class':None,'users':[],'mpdVersion':"0.12",'neededBy':None},
                          'random'            :{'class':None,'users':[],'mpdVersion':"0.12",'neededBy':None},
                          'listplaylists'            :{'class':None,'users':[],'mpdVersion':"0.12",'neededBy':None},
                          'load'            :{'class':None,'users':[],'mpdVersion':"0.12",'neededBy':None},
                          'save'            :{'class':None,'users':[],'mpdVersion':"0.12",'neededBy':None},
+                         'search'            :{'class':None,'users':[],'mpdVersion':"0.12",'neededBy':None},
                          'rm'            :{'class':None,'users':[],'mpdVersion':"0.12",'neededBy':None},
                          'setvol'           :{'class':None,'users':[],'mpdVersion':"0.12",'neededBy':None}
                          }
