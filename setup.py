@@ -8,5 +8,5 @@ setup(name='python-mpd-server',
       author='kedals',
       author_email='kedals0@gmail.com',
       url='http://pympdserver.tuxfamily.org/',
-      py_modules=["mpdserver"],
+      packages=["mpdserver"],
      )
