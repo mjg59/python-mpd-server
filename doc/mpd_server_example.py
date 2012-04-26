@@ -1,1 +1,1 @@
-../mpd_server_example.py
+../examples/mpd_server_example.py
