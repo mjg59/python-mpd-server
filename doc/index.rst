@@ -55,7 +55,7 @@ Basic Example
 -------------
 This is a simple example of how to use python-mpd-server.
 
-.. literalinclude:: mpd_server_example.py
+.. literalinclude:: ../examples/mpd_server_example.py
 
 
 Indices and tables
