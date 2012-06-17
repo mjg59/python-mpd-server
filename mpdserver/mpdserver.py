@@ -133,7 +133,7 @@ class MpdRequestHandler(SocketServer.StreamRequestHandler):
                          'moveid'           :{'class':None,'users':[],'mpdVersion':"0.12",'neededBy':None},
                          'move'             :{'class':None,'users':[],'mpdVersion':"0.12",'neededBy':None},
                          'delete'           :{'class':Delete,'users':[],'mpdVersion':"0.12",'neededBy':None},
-                         'deleteid'         :{'class':DeleteId,'users':[],'mpdVersion':"0.12",'neededBy':None},
+                         'deleteid'         :{'class':DeleteId,'users':['default'],'mpdVersion':"0.12",'neededBy':None},
                          'add'              :{'class':None,'users':[],'mpdVersion':"0.12",'neededBy':None},
                          'plchangesposid'   :{'class':PlChangesPosId,'users':[],'mpdVersion':"0.12",'neededBy':None},
                          'playid'           :{'class':None,'users':[],'mpdVersion':"0.12",'neededBy':None},
@@ -190,6 +190,7 @@ class MpdRequestHandler(SocketServer.StreamRequestHandler):
                         msg=msg+self.__cmdExec(c)
                         if cmdlist=="list_ok" :  msg=msg+"list_OK\n"
                 except MpdCommandError as e:
+                    logger.info("Command Error: %s"%e.toMpdMsg())
                     msg=e.toMpdMsg()
                 except : raise
                 else:
