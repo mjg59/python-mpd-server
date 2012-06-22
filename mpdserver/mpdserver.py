@@ -118,40 +118,40 @@ class MpdRequestHandler(SocketServer.StreamRequestHandler):
     connection instances this object."""
     Playlist=MpdPlaylist
     __player=None
-    __SupportedCommands={'currentsong'      :{'class':CurrentSong,'users':['default'],'mpdVersion':"0.12",'neededBy':["sonata"]},
-                         'outputs'          :{'class':Outputs,'users':['default'],'mpdVersion':"0.12",'neededBy':["gmpc"]},
-                         'status'           :{'class':Status,'users':['default'],'mpdVersion':"0.12",'neededBy':["sonata"]},
-                         'stats'            :{'class':Stats,'users':['default'],'mpdVersion':"0.12",'neededBy':None},
-                         'notcommands'      :{'class':NotCommands,'users':['default'],'mpdVersion':"0.12",'neededBy':["gmpc"]},
-                         'commands'         :{'class':None,'users':[],'mpdVersion':"0.12",'neededBy':None},
-                         'lsinfo'           :{'class':None,'users':[],'mpdVersion':"0.12",'neededBy':None},
-                         'tagtypes'         :{'class':None,'users':[],'mpdVersion':"0.12",'neededBy':None},
-                         'playlistinfo'     :{'class':PlaylistInfo,'users':['default'],'mpdVersion':"0.12",'neededBy':None},
-                         'playlistid'       :{'class':PlaylistId,'users':['default'],'mpdVersion':"0.12",'neededBy':None},
-                         'listplaylistinfo' :{'class':None,'users':[],'mpdVersion':"0.12",'neededBy':None},
-                         'plchanges'        :{'class':PlChanges,'users':['default'],'mpdVersion':"0.12",'neededBy':["sonata"]},
-                         'moveid'           :{'class':None,'users':[],'mpdVersion':"0.12",'neededBy':None},
-                         'move'             :{'class':None,'users':[],'mpdVersion':"0.12",'neededBy':None},
-                         'delete'           :{'class':Delete,'users':[],'mpdVersion':"0.12",'neededBy':None},
-                         'deleteid'         :{'class':DeleteId,'users':['default'],'mpdVersion':"0.12",'neededBy':None},
-                         'add'              :{'class':None,'users':[],'mpdVersion':"0.12",'neededBy':None},
-                         'plchangesposid'   :{'class':PlChangesPosId,'users':[],'mpdVersion':"0.12",'neededBy':None},
-                         'playid'           :{'class':None,'users':[],'mpdVersion':"0.12",'neededBy':None},
-                         'play'             :{'class':None,'users':[],'mpdVersion':"0.12",'neededBy':None},
-                         'password'         :{'class':Password,'users':['default'],'mpdVersion':"0.12",'neededBy':["all"]},
-                         'clear'            :{'class':None,'users':[],'mpdVersion':"0.12",'neededBy':None},
-                         'stop'            :{'class':None,'users':[],'mpdVersion':"0.12",'neededBy':None},
-                         'seek'            :{'class':None,'users':[],'mpdVersion':"0.12",'neededBy':None},
-                         'pause'            :{'class':None,'users':[],'mpdVersion':"0.12",'neededBy':None},
-                         'next'            :{'class':None,'users':[],'mpdVersion':"0.12",'neededBy':None},
-                         'previous'            :{'class':None,'users':[],'mpdVersion':"0.12",'neededBy':None},
-                         'random'            :{'class':None,'users':[],'mpdVersion':"0.12",'neededBy':None},
-                         'listplaylists'            :{'class':None,'users':[],'mpdVersion':"0.12",'neededBy':None},
-                         'load'            :{'class':None,'users':[],'mpdVersion':"0.12",'neededBy':None},
-                         'save'            :{'class':None,'users':[],'mpdVersion':"0.12",'neededBy':None},
-                         'search'            :{'class':None,'users':[],'mpdVersion':"0.12",'neededBy':None},
-                         'rm'            :{'class':None,'users':[],'mpdVersion':"0.12",'neededBy':None},
-                         'setvol'           :{'class':None,'users':[],'mpdVersion':"0.12",'neededBy':None}
+    __SupportedCommands={'currentsong'      :{'class':CurrentSong,'users':['default'],'group':'read','mpdVersion':"0.12",'neededBy':["sonata"]},
+                         'outputs'          :{'class':Outputs,'users':['default'],'group':'read','mpdVersion':"0.12",'neededBy':["gmpc"]},
+                         'status'           :{'class':Status,'users':['default'],'group':'read','mpdVersion':"0.12",'neededBy':["sonata"]},
+                         'stats'            :{'class':Stats,'users':['default'],'group':'read','mpdVersion':"0.12",'neededBy':None},
+                         'notcommands'      :{'class':NotCommands,'users':['default'],'group':'read','mpdVersion':"0.12",'neededBy':["gmpc"]},
+                         'commands'         :{'class':None,'users':[],'group':'read','mpdVersion':"0.12",'neededBy':None},
+                         'lsinfo'           :{'class':None,'users':[],'group':'read','mpdVersion':"0.12",'neededBy':None},
+                         'tagtypes'         :{'class':None,'users':[],'group':'read','mpdVersion':"0.12",'neededBy':None},
+                         'playlistinfo'     :{'class':PlaylistInfo,'users':['default'],'group':'read','mpdVersion':"0.12",'neededBy':None},
+                         'playlistid'       :{'class':PlaylistId,'users':['default'],'group':'read','mpdVersion':"0.12",'neededBy':None},
+                         'listplaylistinfo' :{'class':None,'users':[],'group':'read','mpdVersion':"0.12",'neededBy':None},
+                         'plchanges'        :{'class':PlChanges,'users':['default'],'group':'read','mpdVersion':"0.12",'neededBy':["sonata"]},
+                         'moveid'           :{'class':None,'users':[],'group':'read','mpdVersion':"0.12",'neededBy':None},
+                         'move'             :{'class':None,'users':[],'group':'read','mpdVersion':"0.12",'neededBy':None},
+                         'delete'           :{'class':Delete,'users':[],'group':'read','mpdVersion':"0.12",'neededBy':None},
+                         'deleteid'         :{'class':DeleteId,'users':['default'],'group':'read','mpdVersion':"0.12",'neededBy':None},
+                         'add'              :{'class':None,'users':[],'group':'read','mpdVersion':"0.12",'neededBy':None},
+                         'plchangesposid'   :{'class':PlChangesPosId,'users':[],'group':'read','mpdVersion':"0.12",'neededBy':None},
+                         'playid'           :{'class':None,'users':[],'group':'read','mpdVersion':"0.12",'neededBy':None},
+                         'play'             :{'class':None,'users':[],'group':'read','mpdVersion':"0.12",'neededBy':None},
+                         'password'         :{'class':Password,'users':['default'],'group':'read','mpdVersion':"0.12",'neededBy':["all"]},
+                         'clear'            :{'class':None,'users':[],'group':'read','mpdVersion':"0.12",'neededBy':None},
+                         'stop'            :{'class':None,'users':[],'group':'read','mpdVersion':"0.12",'neededBy':None},
+                         'seek'            :{'class':None,'users':[],'group':'read','mpdVersion':"0.12",'neededBy':None},
+                         'pause'            :{'class':None,'users':[],'group':'read','mpdVersion':"0.12",'neededBy':None},
+                         'next'            :{'class':None,'users':[],'group':'read','mpdVersion':"0.12",'neededBy':None},
+                         'previous'            :{'class':None,'users':[],'group':'read','mpdVersion':"0.12",'neededBy':None},
+                         'random'            :{'class':None,'users':[],'group':'read','mpdVersion':"0.12",'neededBy':None},
+                         'listplaylists'            :{'class':None,'users':[],'group':'read','mpdVersion':"0.12",'neededBy':None},
+                         'load'            :{'class':None,'users':[],'group':'write','mpdVersion':"0.12",'neededBy':None},
+                         'save'            :{'class':None,'users':[],'group':'write','mpdVersion':"0.12",'neededBy':None},
+                         'search'            :{'class':None,'users':[],'group':'read','mpdVersion':"0.12",'neededBy':None},
+                         'rm'            :{'class':None,'users':[],'group':'write','mpdVersion':"0.12",'neededBy':None},
+                         'setvol'           :{'class':None,'users':[],'group':'control','mpdVersion':"0.12",'neededBy':None}
                          }
     
     def __init__(self, request, client_address, server):
@@ -233,6 +233,19 @@ class MpdRequestHandler(SocketServer.StreamRequestHandler):
     def UnregisterCommand(cls,commandName):
         """ Unregister a command"""
         cls.__SupportedCommands[commandName]=None
+
+    @classmethod
+    def UserPermissionsCommand(cls,user,commandName=None,group=None):
+        """ Add permissions for user 'user'. If commandName is not specified, group should be specified. """
+        if commandName != None:
+             cls.__SupportedCommands[commandNames]['users'].append(user)
+        elif group != None:
+            for c in cls.__SupportedCommands.itervalues():
+                if c['group']==group:
+                    c['users'].append(user)
+        else:
+            raise TypeError
+
 
     @classmethod
     def SupportedCommand(cls):
