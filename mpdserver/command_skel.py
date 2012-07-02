@@ -8,6 +8,8 @@ class Random(Command):
 
 class PlayId(Command):
     formatArg=[('songId',OptInt)]
+class Play(Command):
+    formatArg=[('songPos',OptInt)]
 
 class Pause(Command):
     """ Override :func:`handle_pause` and :func:`handle_unpause` method """
