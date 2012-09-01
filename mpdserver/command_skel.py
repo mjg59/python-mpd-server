@@ -168,8 +168,8 @@ class PlChangesPosId(CommandItems):
         p=self.playlist.generateMpdPlaylistDiff(self.args['playlistVersion'])
         acc=[]
         for s in p:
-            acc.append(('cpos',s['playlistPosition']))
-            acc.append(('Id',s['id']))
+            acc.append(('cpos',s.playlistPosition))
+            acc.append(('Id',s.songId))
         return acc
 
 class Password(Command):
