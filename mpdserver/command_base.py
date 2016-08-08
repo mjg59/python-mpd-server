@@ -67,11 +67,12 @@ class Command():
     """ A dictionnary of received arguments from mpd client. They must
     be defined in :attr:`formatArg`."""
 
-    def __init__(self,args,playlist,frontend,player):
+    def __init__(self,args,playlist,frontend,player,request):
             self.args=self.__parseArg(args)
             self.playlist=playlist
             self.frontend=frontend
             self.player=player
+            self.request=request
 
     def run(self):
         """To treat a command. This class handle_args method and toMpdMsg method."""

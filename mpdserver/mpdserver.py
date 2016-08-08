@@ -211,7 +211,7 @@ class MpdRequestHandler(SocketServer.StreamRequestHandler):
             args=[a[1:len(a)-1] for a in pcmd[1:]]
             logger.debug("Command executed : %s %s for frontend '%s'" % (cmd,args,self.frontend.get()))
             commandCls=self.__getCommandClass(cmd,self.frontend)
-            msg=commandCls(args,playlist=self.playlist,frontend=self.frontend,player=self.__class__.__player).run()
+            msg=commandCls(args,playlist=self.playlist,frontend=self.frontend,player=self.__class__.__player,request=self.request).run()
         except MpdCommandError : raise
         except CommandNotSupported : raise
         except :
