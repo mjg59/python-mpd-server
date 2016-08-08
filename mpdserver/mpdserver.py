@@ -120,6 +120,7 @@ class MpdRequestHandler(SocketServer.StreamRequestHandler):
     __player=None
     __SupportedCommands={'currentsong'      :{'class':CurrentSong,'users':['default'],'group':'read','mpdVersion':"0.12",'neededBy':["sonata"]},
                          'outputs'          :{'class':Outputs,'users':['default'],'group':'read','mpdVersion':"0.12",'neededBy':["gmpc"]},
+                         'enableoutput'     :{'class':None,'users':['default'],'group':'read','mpdVersion':"0.12",'neededBy':["gmpc"]},
                          'status'           :{'class':Status,'users':['default'],'group':'read','mpdVersion':"0.12",'neededBy':["sonata"]},
                          'stats'            :{'class':Stats,'users':['default'],'group':'read','mpdVersion':"0.12",'neededBy':None},
                          'notcommands'      :{'class':NotCommands,'users':['default'],'group':'read','mpdVersion':"0.12",'neededBy':["gmpc"]},
@@ -128,7 +129,8 @@ class MpdRequestHandler(SocketServer.StreamRequestHandler):
                          'tagtypes'         :{'class':None,'users':[],'group':'read','mpdVersion':"0.12",'neededBy':None},
                          'playlistinfo'     :{'class':PlaylistInfo,'users':['default'],'group':'read','mpdVersion':"0.12",'neededBy':None},
                          'playlistid'       :{'class':PlaylistId,'users':['default'],'group':'read','mpdVersion':"0.12",'neededBy':None},
-                         'listplaylistinfo' :{'class':None,'users':[],'group':'read','mpdVersion':"0.12",'neededBy':None},
+                         'playlistfind'     :{'class':None,'users':['default'],'group':'read','mpdVersion':"0.12",'neededBy':None},
+                         'listplaylistinfo' :{'class':ListPlaylistInfo,'users':['default'],'group':'read','mpdVersion':"0.12",'neededBy':None},
                          'plchanges'        :{'class':PlChanges,'users':['default'],'group':'read','mpdVersion':"0.12",'neededBy':["sonata"]},
                          'plchangesposid'   :{'class':PlChangesPosId,'users':['default'],'group':'read','mpdVersion':"0.12",'neededBy':None},
                          'moveid'           :{'class':None,'users':[],'group':'read','mpdVersion':"0.12",'neededBy':None},
@@ -136,22 +138,29 @@ class MpdRequestHandler(SocketServer.StreamRequestHandler):
                          'delete'           :{'class':Delete,'users':[],'group':'read','mpdVersion':"0.12",'neededBy':None},
                          'deleteid'         :{'class':DeleteId,'users':['default'],'group':'read','mpdVersion':"0.12",'neededBy':None},
                          'add'              :{'class':None,'users':[],'group':'read','mpdVersion':"0.12",'neededBy':None},
+                         'addid'            :{'class':None,'users':[],'group':'read','mpdVersion':"0.12",'neededBy':None},
+                         'list'             :{'class':None,'users':[],'group':'read','mpdVersion':"0.12",'neededBy':None},
+                         'find'             :{'class':None,'users':[],'group':'read','mpdVersion':"0.12",'neededBy':None},
                          'playid'           :{'class':None,'users':[],'group':'read','mpdVersion':"0.12",'neededBy':None},
                          'play'             :{'class':None,'users':[],'group':'read','mpdVersion':"0.12",'neededBy':None},
                          'password'         :{'class':Password,'users':['default'],'group':'read','mpdVersion':"0.12",'neededBy':["all"]},
                          'clear'            :{'class':None,'users':[],'group':'read','mpdVersion':"0.12",'neededBy':None},
                          'stop'            :{'class':None,'users':[],'group':'read','mpdVersion':"0.12",'neededBy':None},
                          'seek'            :{'class':None,'users':[],'group':'read','mpdVersion':"0.12",'neededBy':None},
+                         'seekid'          :{'class':None,'users':[],'group':'read','mpdVersion':"0.12",'neededBy':None},
                          'pause'            :{'class':None,'users':[],'group':'read','mpdVersion':"0.12",'neededBy':None},
                          'next'            :{'class':None,'users':[],'group':'read','mpdVersion':"0.12",'neededBy':None},
                          'previous'            :{'class':None,'users':[],'group':'read','mpdVersion':"0.12",'neededBy':None},
                          'random'            :{'class':None,'users':[],'group':'read','mpdVersion':"0.12",'neededBy':None},
+                         'repeat'            :{'class':None,'users':[],'group':'read','mpdVersion':"0.12",'neededBy':None},
                          'listplaylists'            :{'class':None,'users':[],'group':'read','mpdVersion':"0.12",'neededBy':None},
                          'load'            :{'class':None,'users':[],'group':'write','mpdVersion':"0.12",'neededBy':None},
                          'save'            :{'class':None,'users':[],'group':'write','mpdVersion':"0.12",'neededBy':None},
                          'search'            :{'class':None,'users':[],'group':'read','mpdVersion':"0.12",'neededBy':None},
                          'rm'            :{'class':None,'users':[],'group':'write','mpdVersion':"0.12",'neededBy':None},
-                         'setvol'           :{'class':None,'users':[],'group':'control','mpdVersion':"0.12",'neededBy':None}
+                         'setvol'           :{'class':None,'users':[],'group':'control','mpdVersion':"0.12",'neededBy':None},
+                         'urlhandlers'           :{'class':None,'users':['default'],'group':'read','mpdVersion':"0.12",'neededBy':None},
+                         'idle'             :{'class':None,'users':[],'group':'read','mpdVersion':"0.12",'neededBy':None}
                          }
     
     def __init__(self, request, client_address, server):
