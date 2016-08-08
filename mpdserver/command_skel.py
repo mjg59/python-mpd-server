@@ -145,7 +145,7 @@ class PlaylistId(CommandSongs):
     """ Without song position, list all song in current playlist. With
     song position argument, get song details. """
     formatArg=[('songId',OptInt)]
-    def handle_args(self,songId):pass
+    def handle_args(self,songId=0):pass
     def songs(self):
         try :
             idx=self.playlist.songIdToPosition(self.args['songId'])
