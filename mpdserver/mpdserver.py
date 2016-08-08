@@ -42,7 +42,7 @@ from command_base import *
 from command_skel import *
 
 logger=logging
-logger.basicConfig(level=logging.INFO)
+#logger.basicConfig(level=logging.INFO)
 #logger.basicConfig(level=logging.DEBUG)
 
 
