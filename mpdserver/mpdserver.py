@@ -184,10 +184,12 @@ class MpdRequestHandler(SocketServer.StreamRequestHandler):
                         cmds.append(self.data)
                         if not cmdlist:break
                 logger.debug("Commands received from %s" % self.client_address[0])
+                respond = False
                 try:
                     for c in cmds:
                         logger.debug("Command '" + c + "'...")
-                        msg=msg+self.__cmdExec(c)
+                        (respond, rspmsg)=self.__cmdExec(c)
+                        msg += rspmsg
                         if cmdlist=="list_ok" :  msg=msg+"list_OK\n"
                 except MpdCommandError as e:
                     logger.info("Command Error: %s"%e.toMpdMsg())
@@ -197,7 +199,8 @@ class MpdRequestHandler(SocketServer.StreamRequestHandler):
                     msg=msg+"OK\n"
                 logger.debug("Message sent:\n\t\t"+msg.replace("\n","\n\t\t"))
                 umsg=unicode(msg,"utf-8",errors='replace')
-                self.request.send(msg.encode("utf-8"))
+                if respond == True:
+                    self.request.send(msg.encode("utf-8"))
             except IOError,e:
                 logger.debug("Client disconnected (%s)"% threading.currentThread().getName())
                 break
@@ -218,7 +221,7 @@ class MpdRequestHandler(SocketServer.StreamRequestHandler):
             logger.critical("Unexpected error on command %s (%s): %s" % (c,self.frontend.get(),sys.exc_info()[0]))
             raise
         logger.debug("Respond:\n\t\t"+msg.replace("\n","\n\t\t"))
-        return msg
+        return (commandCls.respond, msg)
 
     # Manage user rights
     @classmethod

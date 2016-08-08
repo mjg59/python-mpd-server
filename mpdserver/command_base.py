@@ -57,6 +57,9 @@ class Command():
     """
 
     formatArg=[]
+    varArg=False
+    listArg=False
+    respond=True
     """ To specify command arguments format. For example, ::
     
        formatArg=[("song",OptStr)] 
@@ -90,6 +93,18 @@ class Command():
         return cls.__name__.lower()
 
     def __parseArg(self,args):
+        if self.listArg == True:
+            d = dict()
+            d['args'] = args
+            return d
+        if self.varArg == True:
+            d = dict()
+            for i in range(0, len(args), 2):
+                key = args[i]
+                if key not in d:
+                    d[key] = []
+                d[key].append(args[i+1])
+            return d
         if len(args) > len(self.formatArg):
             raise CommandArgumentException("Too much arguments: %s command arguments should be %s instead of %s" % (self.__class__,self.formatArg,args))
         try:
