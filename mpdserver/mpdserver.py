@@ -211,7 +211,9 @@ class MpdRequestHandler(SocketServer.StreamRequestHandler):
         try:
             pcmd=[m.group() for m in re.compile('(\w+)|("([^"])+")').finditer(c)] # WARNING An argument cannot contains a '"'
             cmd=pcmd[0]
-            args=[a[1:len(a)-1] for a in pcmd[1:]]
+            for i in range(1, len(pcmd)):
+                pcmd[i] = pcmd[i].replace('"', '')
+            args=pcmd[1:]
             logger.debug("Command executed : %s %s for frontend '%s'" % (cmd,args,self.frontend.get()))
             commandCls=self.__getCommandClass(cmd,self.frontend)
             msg=commandCls(args,playlist=self.playlist,frontend=self.frontend,player=self.__class__.__player,request=self.request).run()
