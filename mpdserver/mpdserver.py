@@ -207,9 +207,8 @@ class MpdRequestHandler(SocketServer.StreamRequestHandler):
                 else:
                     msg=msg+"OK\n"
                 logger.debug("Message sent:\n\t\t"+msg.replace("\n","\n\t\t"))
-                umsg=unicode(msg,"utf-8",errors='replace')
                 if respond == True:
-                    self.request.send(msg.encode("utf-8"))
+                    self.request.send(msg)
             except IOError,e:
                 logger.debug("Client disconnected (%s)"% threading.currentThread().getName())
                 break
