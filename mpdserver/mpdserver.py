@@ -160,6 +160,8 @@ class MpdRequestHandler(SocketServer.StreamRequestHandler):
                          'rm'            :{'class':None,'users':[],'group':'write','mpdVersion':"0.12",'neededBy':None},
                          'setvol'           :{'class':None,'users':[],'group':'control','mpdVersion':"0.12",'neededBy':None},
                          'urlhandlers'           :{'class':None,'users':['default'],'group':'read','mpdVersion':"0.12",'neededBy':None},
+                         'listallinfo'           :{'class':None,'users':['default'],'group':'read','mpdVersion':"0.12",'neededBy':None},
+                         'replay_gain_status'           :{'class':None,'users':['default'],'group':'read','mpdVersion':"0.12",'neededBy':None},
                          'idle'             :{'class':None,'users':[],'group':'read','mpdVersion':"0.12",'neededBy':None}
                          }
     
